@@ -1,15 +1,13 @@
-﻿using ProductStoreApp.Models;
+﻿using MySqlConnector;
+using ProductStoreApp.Models;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ProductStoreApp.Services
 {
-    public class ProductDAO : IProductsDataService
+    public class ProductMySqlDAO : IProductsDataService
     {
-        readonly string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Test;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Test;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
         public List<ProductModel> AllProducts()
         {
@@ -17,22 +15,22 @@ namespace ProductStoreApp.Services
 
             string sqlStatement = "SELECT * FROM dbo.Products";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
-                try 
+                try
                 {
                     connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteReader();
 
-                    while(reader.Read())
+                    while (reader.Read())
                     {
                         foundProducts.Add(new ProductModel((int)reader[0], (string)reader[1], (decimal)reader[2], (string)reader[3]));
                     }
                     connection.Close();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
@@ -46,11 +44,11 @@ namespace ProductStoreApp.Services
 
             string sqlStatement = "DELETE FROM dbo.Products WHERE Id = @id";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
-                command.Parameters.AddWithValue("@Id", product.Id);
+                command.Parameters.AddWithValue("@id", product.Id);
 
                 try
                 {
@@ -75,16 +73,16 @@ namespace ProductStoreApp.Services
 
             string sqlStatement = "SELECT * FROM dbo.Products WHERE Id = @id";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
-                command.Parameters.AddWithValue("@Id", id);
+                command.Parameters.AddWithValue("@id", id);
 
                 try
                 {
                     connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteReader();
 
                     while (reader.Read())
                     {
@@ -104,11 +102,11 @@ namespace ProductStoreApp.Services
         {
             int result = -1;
 
-            string sqlStatement = "INSERT INTO dbo.Products (Name, Price, Description) OUTPUT INSERTED.ID VALUES (@name, @price, @description);";
+            string sqlStatement = "INSERT INTO dbo.Products (Name, Price, Description) VALUES (@name, @price, @description); SELECT LAST_ID_INSERTED();";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
                 command.Parameters.AddWithValue("@name", product.Name);
                 command.Parameters.AddWithValue("@price", product.Price);
@@ -119,9 +117,13 @@ namespace ProductStoreApp.Services
                     connection.Open();
                     var affectedRow = command.ExecuteScalar();
 
-                    if(affectedRow != null)
+                    if (affectedRow != null)
                     {
-                        result = (int)affectedRow;
+                        //special case for BIGINT in MySQL
+                        if(affectedRow.GetType() == typeof(ulong))
+                            result = Convert.ToInt32(affectedRow);
+                        else
+                            result = (int)affectedRow;
                     }
                     connection.Close();
                 }
@@ -139,15 +141,15 @@ namespace ProductStoreApp.Services
 
             string sqlStatement = "SELECT * FROM dbo.Products WHERE Name LIKE @Name";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
                 command.Parameters.AddWithValue("@Name", '%' + searchTerm + '%');
 
                 try
                 {
                     connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteReader();
 
                     while (reader.Read())
                     {
@@ -169,9 +171,9 @@ namespace ProductStoreApp.Services
 
             string sqlStatement = "UPDATE dbo.Products SET Name = @Name, Price = @Price, Description = @Description WHERE Id = @id";
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(sqlStatement, connection);
+                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
                 command.Parameters.AddWithValue("@Id", product.Id);
                 command.Parameters.AddWithValue("@Name", product.Name);
@@ -183,7 +185,7 @@ namespace ProductStoreApp.Services
                     connection.Open();
 
                     result = Convert.ToInt32(command.ExecuteScalar());
-                    
+
                     connection.Close();
                 }
                 catch (Exception ex)
