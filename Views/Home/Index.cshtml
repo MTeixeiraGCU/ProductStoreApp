@@ -4,5 +4,6 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p>View a list of @Html.ActionLink("Products", "Index", new { controller = "Products" }).</p>
+    <p>or search for specific ones @Html.ActionLink("Here", "SearchForm", new { controller = "Products" }).</p>
 </div>

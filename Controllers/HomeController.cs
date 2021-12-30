@@ -25,7 +25,7 @@ namespace ProductStoreApp.Controllers
 
         public IActionResult Privacy()
         {
-            ViewBag.Message = "Be careful about privacy";
+            ViewBag.Message = "This project was created for GCU CST-350 by Marc Teixeira";
             return View("Privacy");
         }
 
