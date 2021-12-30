@@ -110,7 +110,7 @@ namespace ProductStoreApp.Services
         {
             int result = -1;
 
-            string sqlStatement = "INSERT INTO products (Name, Price, Description) VALUES (@name, @price, @description); SELECT LAST_ID_INSERTED();";
+            string sqlStatement = "INSERT INTO products (Name, Price, Description) VALUES (@name, @price, @description); SELECT LAST_INSERT_ID();";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -147,12 +147,12 @@ namespace ProductStoreApp.Services
         {
             List<ProductModel> foundProducts = new List<ProductModel>();
 
-            string sqlStatement = "SELECT * FROM products WHERE Name LIKE @Name";
+            string sqlStatement = "SELECT * FROM products WHERE Name LIKE @name";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 MySqlCommand command = new MySqlCommand(sqlStatement, connection);
-                command.Parameters.AddWithValue("@Name", '%' + searchTerm + '%');
+                command.Parameters.AddWithValue("@name", '%' + searchTerm + '%');
 
                 try
                 {
@@ -177,16 +177,16 @@ namespace ProductStoreApp.Services
         {
             int result = -1;
 
-            string sqlStatement = "UPDATE products SET Name = @Name, Price = @Price, Description = @Description WHERE Id = @id";
+            string sqlStatement = "UPDATE products SET Name = @name, Price = @price, Description = @description WHERE Id = @id";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
-                command.Parameters.AddWithValue("@Id", product.Id);
-                command.Parameters.AddWithValue("@Name", product.Name);
-                command.Parameters.AddWithValue("@Price", product.Price);
-                command.Parameters.AddWithValue("@Description", product.Description);
+                command.Parameters.AddWithValue("@id", product.Id);
+                command.Parameters.AddWithValue("@name", product.Name);
+                command.Parameters.AddWithValue("@price", product.Price);
+                command.Parameters.AddWithValue("@description", product.Description);
 
                 try
                 {
