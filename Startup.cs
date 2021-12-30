@@ -24,7 +24,12 @@ namespace ProductStoreApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //confivure for release and debug versions
+#if DEBUG
             services.AddTransient<IProductsDataService, ProductDAO>();
+#else
+            services.AddTransient<IProductsDataService, ProductMySqlDAO>();
+#endif
             services.AddControllersWithViews();
         }
 

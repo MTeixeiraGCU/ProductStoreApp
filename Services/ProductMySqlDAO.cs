@@ -7,13 +7,21 @@ namespace ProductStoreApp.Services
 {
     public class ProductMySqlDAO : IProductsDataService
     {
-        private string connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Test;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        //local environment variables
+        private static string database_server = Environment.GetEnvironmentVariable("DATABASE_SERVER_NAME");
+        private static string database_userId = Environment.GetEnvironmentVariable("DATABASE_USER_ID");
+        private static string database_password = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
+        private static string database_schema = Environment.GetEnvironmentVariable("DATABASE_SCHEMA");
+        private static string database_port = Environment.GetEnvironmentVariable("DATABASE_PORT");
+
+        //MySQL database connection string.
+        private static string connectionString = "server=" + database_server + ";UserId=" + database_userId + ";password=" + database_password + ";database=" + database_schema + ";port=" + database_port;
 
         public List<ProductModel> AllProducts()
         {
             List<ProductModel> foundProducts = new List<ProductModel>();
 
-            string sqlStatement = "SELECT * FROM dbo.Products";
+            string sqlStatement = "SELECT * FROM products";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -42,7 +50,7 @@ namespace ProductStoreApp.Services
         {
             bool isDeleted = false;
 
-            string sqlStatement = "DELETE FROM dbo.Products WHERE Id = @id";
+            string sqlStatement = "DELETE FROM products WHERE Id = @id";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -71,7 +79,7 @@ namespace ProductStoreApp.Services
         {
             ProductModel foundProduct = null;
 
-            string sqlStatement = "SELECT * FROM dbo.Products WHERE Id = @id";
+            string sqlStatement = "SELECT * FROM products WHERE Id = @id";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -102,7 +110,7 @@ namespace ProductStoreApp.Services
         {
             int result = -1;
 
-            string sqlStatement = "INSERT INTO dbo.Products (Name, Price, Description) VALUES (@name, @price, @description); SELECT LAST_ID_INSERTED();";
+            string sqlStatement = "INSERT INTO products (Name, Price, Description) VALUES (@name, @price, @description); SELECT LAST_ID_INSERTED();";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -139,7 +147,7 @@ namespace ProductStoreApp.Services
         {
             List<ProductModel> foundProducts = new List<ProductModel>();
 
-            string sqlStatement = "SELECT * FROM dbo.Products WHERE Name LIKE @Name";
+            string sqlStatement = "SELECT * FROM products WHERE Name LIKE @Name";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
@@ -169,7 +177,7 @@ namespace ProductStoreApp.Services
         {
             int result = -1;
 
-            string sqlStatement = "UPDATE dbo.Products SET Name = @Name, Price = @Price, Description = @Description WHERE Id = @id";
+            string sqlStatement = "UPDATE products SET Name = @Name, Price = @Price, Description = @Description WHERE Id = @id";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
